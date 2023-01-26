@@ -4,7 +4,8 @@ import pygame
 pygame.init()
 
 class DifferentScreens:
-    def __init__(self, a, b, screen):
+    def __init__(self, a, b, screen, n):
+
         self.display_width = a
         self.display_height = b
         self.screen = screen
@@ -13,10 +14,10 @@ class DifferentScreens:
         self.run = True
         self.was_played = False
 
-        self.start()
-
-    def defeat(self):
-        pass
+        if n == 1:
+            self.start()
+        else:
+            self.end_of_the_game()
 
     def end_of_the_game(self):
         sound = pygame.mixer.Sound('data_artem\\mp3\\Ambient 7.mp3')
@@ -31,11 +32,11 @@ class DifferentScreens:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.run = False
-                if event.type == pygame.KEYDOWN:
+                if event.type == pygame.MOUSEBUTTONUP:
                     x, y = pygame.mouse.get_pos()
                     if x >= 660 and x <= 1260 and y >= 680 and y <= 880:
                         self.run = False
-                        pygame.quit()
+        pygame.quit()
 
     def start(self):
 
@@ -111,10 +112,7 @@ class DifferentScreens:
             pygame.quit()
 
 
-
-display_width = 1920
-display_height = 1080
-
-screen = pygame.display.set_mode((display_width, display_height))
-
-DifferentScreens(display_width, display_height, screen)
+#display_width, display_height = 1920, 1080
+#screen = pygame.display.set_mode((display_width, display_height))
+#DifferentScreens(display_width, display_height, screen, 2)
+#при начале вызываем сам класс c аргументом 1, для конца с арг 2
