@@ -1,3 +1,3 @@
 import flappy_bird
 
-flappy_bird.go()
+print(flappy_bird.go())
