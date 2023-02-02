@@ -32,10 +32,15 @@ def load_image(name, colorkey=None, transform=None):
 
 
 between = 150
+winning_coin = 0
+
 fon = load_image("fon.png")
 fon = pygame.transform.scale(fon, (WIDTH, HEIGHT))
 starting_fon = load_image("starting_fon.jpg")
 starting_fon = pygame.transform.scale(starting_fon, (WIDTH, HEIGHT))
+ending_fon = load_image("ending_fon.jpg")
+
+
 player_image = load_image('player.png')
 player_image = pygame.transform.scale(player_image, (35, 25))
 pipe = load_image("pipe.png")
@@ -126,18 +131,7 @@ one_pipe_passed = False
 
 
 def start_screen():
-    intro_text = ["ЗАСТАВКА"]
     screen.blit(starting_fon, (0, 0))
-    font = pygame.font.Font(None, 30)
-    text_coord = 50
-    for line in intro_text:
-        string_rendered = font.render(line, True, pygame.Color('white'))
-        intro_rect = string_rendered.get_rect()
-        text_coord += 10
-        intro_rect.top = text_coord
-        intro_rect.x = 10
-        text_coord += intro_rect.height
-        screen.blit(string_rendered, intro_rect)
 
     global score, one_pipe_passed
     score = 0
@@ -146,21 +140,26 @@ def start_screen():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
-            elif event.type == pygame.KEYDOWN or \
-                    event.type == pygame.MOUSEBUTTONDOWN:
-                return
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                x, y = pygame.mouse.get_pos()
+                if x >= 650 and x <= 1250 and y >= 600 and y <= 800:
+                    return 'next'
+                if x >= 650 and x <= 1250 and y >= 820 and y <= 1020:
+                    return 'back'
         pygame.display.flip()
         clock.tick(FPS)
 
 
 def game():
-    global ground, ground_x, screen, flight, game_over, score, one_pipe_passed, between
+    global ground, ground_x, screen, flight, game_over, score, one_pipe_passed, between, winning_coin
     pygame.display.flip()
     ticks = 1800
     last_pipe = pygame.time.get_ticks() - ticks
 
+
     while True:
         if game_over:
+            player.kill()
             return
 
         for event in pygame.event.get():
@@ -205,6 +204,17 @@ def game():
             text1 = font2.render(f'Life-time: {score} blinks', True, (128, 0, 0))
             screen.blit(text1, (0, 0))
 
+            if score >= 15:
+                font1 = pygame.font.Font('fonts\\DungeonFont.ttf', 40)
+                text2 = font1.render(f'W-Coins: 1', True, (128, 0, 0))
+                screen.blit(text2, (0, 45))
+
+                winning_coin = 1
+            else:
+                font1 = pygame.font.Font('fonts\\DungeonFont.ttf', 40)
+                text2 = font1.render(f'W-Coins: 0', True, (128, 0, 0))
+                screen.blit(text2, (0, 45))
+
             pygame.display.flip()
             clock.tick(FPS)
             if score > 3:
@@ -216,33 +226,47 @@ def game():
 
 
 def end_screen():
-    intro_text = ["КОНЦОВКА"]
-    screen.blit(starting_fon, (0, 0))
-    font = pygame.font.Font(None, 30)
-    text_coord = 50
-    for line in intro_text:
-        string_rendered = font.render(line, True, pygame.Color('white'))
-        intro_rect = string_rendered.get_rect()
-        text_coord += 10
-        intro_rect.top = text_coord
-        intro_rect.x = 10
-        text_coord += intro_rect.height
-        screen.blit(string_rendered, intro_rect)
+    screen.blit(ending_fon, (0, 0))
 
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
-            elif event.type == pygame.KEYDOWN or \
-                    event.type == pygame.MOUSEBUTTONDOWN:
-                return
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                x, y = pygame.mouse.get_pos()
+                if x >= 650 and x <= 1250 and y >= 600 and y <= 800:
+                    return 'next'
+                if x >= 650 and x <= 1250 and y >= 820 and y <= 1020:
+                    return 'back'
+
         pygame.display.flip()
         clock.tick(FPS)
 
 
-if __name__ == "__main__":
+def go():
+    global winning_coin, score, game_over, flight, player, ground_x, offset, one_pipe_passed
     sound = pygame.mixer.Sound('data_artem\\mp3\\Ambient 5.mp3')
     sound.play(loops=-1)
-    start_screen()
-    game()
-    end_screen()
+    if start_screen() == 'next':
+        while winning_coin != 1:
+
+            game()
+
+            flight = True
+            game_over = False
+            player = Player(WIDTH // 2, HEIGHT // 2)
+            ground_x = 0
+            offset = 2
+            score = 0
+            one_pipe_passed = True
+            pipes_group.clear()
+
+            if winning_coin == 0:
+                score = 0
+                a = end_screen()
+                if a == 'back':
+                    terminate()
+            else:
+                terminate()
+    else:
+        print('no')
