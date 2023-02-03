@@ -1,3 +1,7 @@
 import flappy_bird
+import preview
 
-print(flappy_bird.go())
+
+if preview.choise(1) == 'new game':
+    if flappy_bird.go() == 'win to menu':
+        preview.choise(2)
