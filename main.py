@@ -3,7 +3,7 @@ import sys
 import os
 from pygame.sprite import Group
 from pygame import mixer
-
+import random
 all_sprites = pygame.sprite.Group()
 schr = 0
 schu = 0
@@ -106,7 +106,25 @@ def load_image(name, colorkey=None, transform=None):
     else:
         image = image.convert_alpha()
     return image
-
+def start_screen():
+    screen.fill((0,0,0))
+    print("ads")
+    if running == True:
+        print("asd")
+    a = 1
+    intro_text = ["главный экран", "это главный экран", "да-да, главный экран"]
+    fon = pygame.transform.scale(load_image('game over.jpg'), (1200, 720))
+    screen.blit(fon, (0, 0))
+    font = pygame.font.Font(None, 30)
+    text_coord = 50
+    for line in intro_text:
+        string_rendered = font.render(line, 1, pygame.Color('white'))
+        intro_rect = string_rendered.get_rect()
+        text_coord += 10
+        intro_rect.top = text_coord
+        intro_rect.x = 10
+        text_coord += intro_rect.height
+        screen.blit(string_rendered, intro_rect)
 
 if __name__ == '__main__':
 
@@ -140,6 +158,8 @@ if __name__ == '__main__':
     f1 = pygame.font.Font(None, 36)
     text1 = f1.render(f'жизни:{hp}', True,
                       (180, 0, 0))
+    wave = 0
+
 
     for s in range(5):
         for i in range(22):
@@ -201,10 +221,10 @@ if __name__ == '__main__':
             for i in many_bombs.sprites():
                 i.realise()
             goto = pygame.sprite.groupcollide(many_bombs, monsters, True, True)
-            print(monsters)
 
             if c % 20 == 0:
                 monsters.update()
+
             if pygame.sprite.spritecollideany(shp, monsters):
                 hp -= 1
                 many_bombs.empty()
@@ -220,14 +240,26 @@ if __name__ == '__main__':
                         monsters.add(m)
 
                 if hp == 0:
-                    exit()
 
+                    start_screen()
+            if len(monsters) ==0:
+                for s in range(random.randint(1, 7)):
+                    for i in range(random.randint(1, 22)):
+                        m = mobs(screen)
+                        m.x = wd + wd * i
+                        m.y = ht + ht * s
+                        m.rect.x = m.x
+                        m.rect.y = m.y
+                        monsters.add(m)
             monsters.draw(screen)
-
+            for i in monsters.sprites():
+                if i.rect.bottom == screen.get_rect().bottom:
+                    start_screen()
             pygame.display.flip()
             screen.blit(bg, (0, 0))
             text1 = f1.render(f'жизни:{hp}', True,
                               (180, 0, 0))
             screen.blit(text1, (0, 0))
             c += 1
+            print(running)
         pygame.quit()
