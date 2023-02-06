@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 
 import pygame
 from pygame.sprite import Group
@@ -131,7 +132,7 @@ def load_image(name, colorkey=None, transform=None):
     return image
 
 
-def start_screen():
+def end_screen():
     playlist.append("data/ehh.mp3")
     playlist.append("data/ehh.mp3")
 
@@ -190,11 +191,12 @@ if __name__ == '__main__':
     ht = m.rect.height
     c = 0
     rows = 1
+    new = False
     clock = pygame.time.Clock()
     playlist = list()
     playlist.append("data/music.mp3")
     playlist.append("data/music.mp3")
-
+    shooter = True
     pygame.mixer.music.load(playlist.pop())
     pygame.mixer.music.queue(playlist.pop())
     pygame.mixer.music.set_endevent(pygame.USEREVENT)
@@ -202,11 +204,11 @@ if __name__ == '__main__':
     hp = 3
     b = False
     f1 = pygame.font.Font(None, 36)
+    cr = 0
 
     wave = 0
     schu = 0
     hl = health(screen, hp)
-    st = True
     for s in range(rows):
         for i in range(22):
             m = mobs(screen)
@@ -234,9 +236,10 @@ if __name__ == '__main__':
                     schl = 1
                 if event.key == pygame.K_w:
                     schu = 1
-                if event.key == pygame.K_SPACE:
-                    material = bombs(screen, shp)
-                    many_bombs.add(material)
+                if shooter == True:
+                    if event.key == pygame.K_SPACE:
+                        material = bombs(screen, shp)
+                        many_bombs.add(material)
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_d:
                     schr = 0
@@ -246,9 +249,9 @@ if __name__ == '__main__':
                     schl = 0
                 if event.key == pygame.K_w:
                     schu = 0
-        if schr == 1 and shp.rect.right <= 1220:
+        if schr == 1 and shp.rect.right <= width:
             shp.cc += 1
-        if schd == 1 and shp.rect.bottom < 720:
+        if schd == 1 and shp.rect.bottom < height:
             shp.cy += 1
         if schl == 1 and shp.rect.left > -20:
             shp.cc -= 1
@@ -273,7 +276,7 @@ if __name__ == '__main__':
 
             hp -= 1
             many_bombs.empty()
-            monsters.empty()
+            monsters.empty() 
             shp.relocation()
             for s in range(rows - 1):
                 for i in range(22):
@@ -284,29 +287,40 @@ if __name__ == '__main__':
                     m.rect.y = m.y
                     monsters.add(m)
             if hp <= 0:
-                start_screen()
+                end_screen()
+                monsters.empty()
+                rows = 1
                 hp = 3
+                hp -= 1
+                hp = 3
+        cr += 1
         if len(monsters) == 0:
+            shooter = False
+            if cr % 2000 == 0:
+                shooter = True
 
-            for s in range(rows):
-                for i in range(22):
-                    m = mobs(screen)
-                    m.x = wd + wd * i
-                    m.y = ht + ht * s
-                    m.rect.x = m.x
-                    m.rect.y = m.y
-                    monsters.add(m)
-            rows += 1
-        print(len(monsters))
+                for s in range(rows):
+                    for i in range(22):
+                        m = mobs(screen)
+                        m.x = wd + wd * i
+                        m.y = ht + ht * s
+                        m.rect.x = m.x
+                        m.rect.y = m.y
+                        monsters.add(m)
+
+                rows += 1
+
+        print(hp)
         monsters.draw(screen)
         for i in monsters.sprites():
             if i.rect.bottom == screen.get_rect().bottom:
                 hp = 3
-                start_screen()
+                end_screen()
         hl = health(screen, hp)
         hl.realise()
+
         pygame.display.flip()
         screen.blit(bg, (0, 0))
-       
+
         c += 1
     exit()
