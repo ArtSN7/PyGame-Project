@@ -127,6 +127,7 @@ all_monsters = pygame.sprite.Group()
 all_mobs = pygame.sprite.Group()
 player_attacks = pygame.sprite.Group()
 coin = pygame.sprite.Group()
+projectioes = pygame.sprite.Group()
 
 
 def generate_level(level):
@@ -263,24 +264,46 @@ class Bomb(pygame.sprite.Sprite):
                 self.rect.y += self.speed
 
 
-class Boss(pygame.sprite.Sprite):
-    monster = load_image("rock-monster.png")
-    monster_180 = load_image("rock-monster.png", transform=1)
+class Projectile(pygame.sprite.Sprite):
+    def __init__(self, start_x, start_y, x, y):
+        super().__init__(projectioes, all_mobs)
+        self.vel = math.sqrt(2)
+        self.vector = [x - start_x, y - start_y]
+        self.animation_loop = 0
+        self.norm = math.sqrt(self.vector[0] ** 2 + self.vector[1] ** 2)
+        self.direction = [self.vector[0] / self.norm, self.vector[1] / self.norm]
+        self.animations = [load_image(name, dir="Mecha-stone Golem 0.1/projectile_atk", colorkey=-1) for name in
+                           ("p1.png", "p2.png", "p3.png")]
+        self.image = self.animations[self.animation_loop]
+        self.rect = self.image.get_rect()
 
+        self.rect.x = start_x
+        self.rect.y = start_y
+
+    def update(self):
+        if self.animation_loop < 3:
+            self.image = self.animations[math.floor(self.animation_loop)]
+            self.animation_loop += 0.01
+        print(self.rect)
+        self.rect.x += self.direction[0] * self.vel
+        self.rect.y += self.direction[1] * self.vel
+
+
+class Boss(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__(all_monsters, all_mobs)
-        self.image = Boss.monster
-        self.rect = self.image.get_rect()
-        width, height = self.rect.size
-        self.mask = pygame.mask.from_surface(self.image)
         self.animation_loop_idle = 0
         self.animations = [load_image(name, dir="Mecha-stone Golem 0.1/idle", colorkey=-1) for name in
                            ("Idle1.png", "Idle2.png", "Idle3.png", "Idle4.png", "Idle5.png")]
-
+        self.image = self.animations[self.animation_loop_idle]
         self.animation_loop_spint_atk = 0
+        self.rect = self.image.get_rect()
+        width, height = self.rect.size
+        self.mask = pygame.mask.from_surface(self.image)
         self.animations_sprint_atk = [load_image(name, dir="Mecha-stone Golem 0.1/sprint_atk", colorkey=-1) for name in
-                           ("atk1.png", "atk2.png", "atk3.png", "atk4.png", "atk5.png", "atk6.png", "atk7.png",
-                            "atk8.png", "atk9.png",)]
+                                      ("atk1.png", "atk2.png", "atk3.png", "atk4.png", "atk5.png", "atk6.png",
+                                       "atk7.png",
+                                       "atk8.png", "atk9.png",)]
 
         # self.animation_loop_walk = 0
         ''' self.animations_walk = [load_image(name, dir="Mecha-stone Golem 0.1/sprint_atk", colorkey=-1) for name in
@@ -294,7 +317,7 @@ class Boss(pygame.sprite.Sprite):
         self.prev_rect = self.rect
         self.velocity = 1
         self.last_atk = 0
-        self.sprint_atk_t = 0
+        self.sprint_atk_t = self.sprint_atk_t2 = 0
 
     def idle_animation(self):
         self.image = self.animations[math.floor(self.animation_loop_idle)]
@@ -344,7 +367,7 @@ class Boss(pygame.sprite.Sprite):
                         self.rect.y -= self.speed
                     if oy1:
                         self.rect.y += self.speed
-            elif 50 <= dist <= 400:
+            elif 50 <= dist <= 200:
                 self.sprint_atk_animation()
                 if time_passed - self.sprint_atk_t >= 3000:
                     Bomb(self.rect.x, self.rect.y)
@@ -357,6 +380,10 @@ class Boss(pygame.sprite.Sprite):
                     elif self.rect.y < player.rect.y:
                         self.rect.y += 100
                     self.sprint_atk_t = time_passed
+            elif 200 <= dist <= 400:
+                if time_passed - self.sprint_atk_t2 >= 4000:
+                    Projectile(self.rect.x, self.rect.y, player.rect.x, player.rect.y)
+                    self.sprint_atk_t2 = time_passed
             else:
                 self.idle_animation()
 
@@ -405,11 +432,11 @@ class Player(pygame.sprite.Sprite):
         self.HP = 30
         self.ATK = 3
 
-        self.animations_walking_right = [load_image(name, dir="Fire_Warrior/Walk", colorkey=-1) for name in
+        self.animations_walking_right = [load_image(name, dir="Fire_Warrior/Walk") for name in
                                          ("Fire_Warrior_Walk1.png", "Fire_Warrior_Walk2.png", "Fire_Warrior_Walk3.png",
                                           "Fire_Warrior_Walk4.png", "Fire_Warrior_Walk5.png", "Fire_Warrior_Walk6.png",
                                           "Fire_Warrior_Walk7.png", "Fire_Warrior_Walk8.png")]
-        self.animations_walking_left = [load_image(name, dir="Fire_Warrior/Walk", transform=True, colorkey=-1) for name
+        self.animations_walking_left = [load_image(name, dir="Fire_Warrior/Walk", transform=True) for name
                                         in
                                         ("Fire_Warrior_Walk1.png", "Fire_Warrior_Walk2.png", "Fire_Warrior_Walk3.png",
                                          "Fire_Warrior_Walk4.png", "Fire_Warrior_Walk5.png", "Fire_Warrior_Walk6.png",
@@ -474,7 +501,8 @@ class Player(pygame.sprite.Sprite):
                 y += speed
             self.orientation = "no"
         else:
-            self.animate_walking()
+            if moved:
+                self.animate_walking()
         hit_list = pygame.sprite.spritecollide(self, all_mobs, False)
         for enemy in hit_list:
             if enemy in all_bombs:
@@ -560,6 +588,10 @@ while running:
             player.orientation = "bot"
         if ox or ox1 or oy or oy1 and not moved_once:
             moved_once = True
+        if not ox and not ox1 and not oy and not oy1:
+            moved = False
+        else:
+            moved = True
         all_sprites.draw(surf)
         screen.blit(surf, (0, 0))
         player.update()
@@ -576,6 +608,8 @@ while running:
         all_monsters.draw(screen)
         player_attacks.draw(screen)
         player_group.draw(screen)
+        projectioes.update()
+        projectioes.draw(screen)
         coin.draw(screen)
         text_coord = 30
         for line in ["Player HP: " + str(player.HP)]:
