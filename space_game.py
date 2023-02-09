@@ -126,19 +126,10 @@ def end_screen():
     pygame.mixer.music.queue(playlist.pop())
     pygame.mixer.music.set_endevent(pygame.USEREVENT)
     pygame.mixer.music.play()
-    intro_text = ["нажмите w", "чтобы начать заново"]
-    fon = pygame.transform.scale(load_image('game over.jpg'), (1200, 720))
+    pygame.mixer.music.set_volume(0)
+
+    fon = pygame.transform.scale(load_image('game over.jpg'), (1920, 1080))
     screen.blit(fon, (0, 0))
-    font = pygame.font.Font(None, 30)
-    text_coord = 50
-    for line in intro_text:
-        string_rendered = font.render(line, 1, pygame.Color('white'))
-        intro_rect = string_rendered.get_rect()
-        text_coord += 10
-        intro_rect.top = text_coord
-        intro_rect.x = 10
-        text_coord += intro_rect.height
-        screen.blit(string_rendered, intro_rect)
     pygame.display.flip()
     while True:
         for event in pygame.event.get():
@@ -154,6 +145,7 @@ def end_screen():
                     pygame.mixer.music.queue(playlist.pop())
                     pygame.mixer.music.set_endevent(pygame.USEREVENT)
                     pygame.mixer.music.play()
+                    pygame.mixer.music.set_volume(0)
 
                     return
 
@@ -187,6 +179,7 @@ if True:
     pygame.mixer.music.queue(playlist.pop())
     pygame.mixer.music.set_endevent(pygame.USEREVENT)
     pygame.mixer.music.play()
+    pygame.mixer.music.set_volume(0)
 
     hp = 3
     b = False
@@ -210,6 +203,7 @@ if True:
 
     pause = 1
     pause_fon = load_image('pause.png')
+    winning_of_space = False
     while running:
 
         for event in pygame.event.get():
@@ -298,11 +292,13 @@ if True:
                     m.rect.y = m.y
                     monsters.add(m)
             if hp <= 0:
-                end_screen()
-                monsters.empty()
+                if rows - 2 >= 1:
+                    monsters.empty()
+                    winning_of_space = True
+                else:
+                    end_screen()
+                    monsters.empty()
                 rows = 1
-                hp = 3
-                hp -= 1
                 hp = 3
         cr += 1
 
@@ -338,4 +334,8 @@ if True:
             pygame.display.flip()
             screen.blit(bg, (0, 0))
             c += 1
+
+        if winning_of_space:
+            running = False
+
     exit()
