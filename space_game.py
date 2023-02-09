@@ -13,6 +13,7 @@ schd = 0
 
 
 
+
 class ship():
     def __init__(self, sreen):
         self.screen = sreen
@@ -101,7 +102,6 @@ class health:
         self.screen.blit(self.image, self.rect)
 
 
-
 def load_image(name, colorkey=None, transform=None):
     fullname = os.path.join("data_max/", name)
     if not os.path.isfile(fullname):
@@ -116,7 +116,6 @@ def load_image(name, colorkey=None, transform=None):
     else:
         image = image.convert_alpha()
     return image
-
 
 def end_screen():
     playlist.append("data_max/ehh.mp3")
@@ -134,7 +133,7 @@ def end_screen():
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                exit()
+                sys.exit()
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_w:
                     playlist.clear()
@@ -149,12 +148,29 @@ def end_screen():
 
                     return
 
+def start_screen():
+    fon = load_image('starting_screen.png')
+    screen.blit(fon, (0, 0))
+    pygame.display.flip()
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
+            elif event.type == pygame.KEYDOWN or event.type == pygame.MOUSEBUTTONDOWN:
+                return
+
+
+
 
 if True:
     pygame.init()
     pygame.display.set_caption('siv')
     size = width, height = 1920, 1080
     screen = pygame.display.set_mode(size)
+
+    start_screen()
+
     shp = ship(screen)
     bg = load_image('bgr.jpg')
     bmb = bombs(screen, shp)
@@ -175,6 +191,7 @@ if True:
     playlist.append("data_max/music.mp3")
     playlist.append("data_max/music.mp3")
     shooter = True
+
     pygame.mixer.music.load(playlist.pop())
     pygame.mixer.music.queue(playlist.pop())
     pygame.mixer.music.set_endevent(pygame.USEREVENT)
@@ -204,6 +221,7 @@ if True:
     pause = 1
     pause_fon = load_image('pause.png')
     winning_of_space = False
+
     while running:
 
         for event in pygame.event.get():
@@ -292,7 +310,7 @@ if True:
                     m.rect.y = m.y
                     monsters.add(m)
             if hp <= 0:
-                if rows - 2 >= 1:
+                if rows - 2 >= 6:
                     monsters.empty()
                     winning_of_space = True
                 else:
@@ -304,7 +322,14 @@ if True:
 
         font2 = pygame.font.Font('fonts\\DungeonFont.ttf', 40)
         text1 = font2.render(f'Attacks passed: {rows - 2}', True, (128, 0, 0))
-        screen.blit(text1, (1600, 0))
+        screen.blit(text1, (1400, 0))
+
+        if rows - 2 >= 6:
+            text2 = font2.render(f'W-KEY: 1', True, (128, 0, 0))
+            screen.blit(text2, (1700, 0))
+        else:
+            text2 = font2.render(f'W-KEY: 0', True, (128, 0, 0))
+            screen.blit(text2, (1700, 0))
 
         if len(monsters) == 0:
             shooter = False
