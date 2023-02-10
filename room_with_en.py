@@ -62,54 +62,44 @@ def terminate():
 
 
 def start_screen():
-    intro_text = ["ЗАСТАВКА"]
+    pygame.mouse.set_visible(True)
 
     fon = pygame.transform.scale(load_image('fon.png'), (WIDTH, HEIGHT))
     screen.blit(fon, (0, 0))
-    font = pygame.font.Font(None, 30)
-    text_coord = 50
-    for line in intro_text:
-        string_rendered = font.render(line, True, pygame.Color('white'))
-        intro_rect = string_rendered.get_rect()
-        text_coord += 10
-        intro_rect.top = text_coord
-        intro_rect.x = 10
-        text_coord += intro_rect.height
-        screen.blit(string_rendered, intro_rect)
 
-    while True:
+    run = True
+    znach = ''
+
+    while run:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
-            elif event.type == pygame.KEYDOWN or \
-                    event.type == pygame.MOUSEBUTTONDOWN:
-                return
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                x, y = pygame.mouse.get_pos()
+                if 650 <= x <= 1250 and 370 <= y <= 560:
+                    znach = 'play'
+                    run = False
+                elif 650 <= x <= 1250 and 650 <= y <= 840:
+                    znach = 'back'
+                    run = False
+
         pygame.display.flip()
         clock.tick(FPS)
 
+    return znach
+
 
 def end_screen():
-    intro_text = ["КОНЦОВКА"]
-    fon = load_image('fon.png')
+    fon = load_image('end.png')
     screen.blit(fon, (0, 0))
-    font = pygame.font.Font(None, 30)
-    text_coord = 50
-    for line in intro_text:
-        string_rendered = font.render(line, True, pygame.Color('white'))
-        intro_rect = string_rendered.get_rect()
-        text_coord += 10
-        intro_rect.top = text_coord
-        intro_rect.x = 10
-        text_coord += intro_rect.height
-        screen.blit(string_rendered, intro_rect)
 
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
-            elif event.type == pygame.KEYDOWN or \
-                    event.type == pygame.MOUSEBUTTONDOWN:
+            elif event.type == pygame.KEYDOWN or event.type == pygame.MOUSEBUTTONDOWN:
                 return
+
         pygame.display.flip()
         clock.tick(FPS)
 
@@ -512,6 +502,11 @@ def go():
 
                     if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                         pause = pause * -1
+
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        x, y = pygame.mouse.get_pos()
+                        if 630 <= x <= 1230 and 870 <= y <= 1070:
+                            return 'exit'
             else:
                 for event in pygame.event.get():
 
@@ -628,6 +623,8 @@ def go():
             win = False
             moved_once = False
 
+    return 'win'
+
 
 game_over = False
 player, level_x, level_y, player_pos = generate_level(level)
@@ -636,7 +633,6 @@ x *= tile_width
 x += 15
 y *= tile_height
 y += 5
-start_screen()
 mon_change_dir = False
 running = True
 pygame.mouse.set_visible(False)
