@@ -491,7 +491,10 @@ class Player(pygame.sprite.Sprite):
 
 
 def go():
-    global time_passed, mon_change_dir, walls_group, tiles_group, attack, moved_once, oy, ox, oy1, ox1, running, win, game_over, atk_timer, player, x, speed, y, all_sprites, surf, all_bombs, all_booms, coin, all_monsters, player_group, player_attacks, all_objects, all_mobs
+    global time_passed, mon_change_dir, walls_group, tiles_group,\
+        attack, moved_once, oy, ox, oy1, ox1, running, win, game_over, \
+        atk_timer, player, x, speed, y, all_sprites, surf, all_bombs, all_booms, coin,\
+        all_monsters, player_group, player_attacks, all_objects, all_mobs, pause, pause_screen
 
     while running:
         if win:
@@ -500,84 +503,97 @@ def go():
         elif not game_over:
             attack = False
 
-            for event in pygame.event.get():
+            if pause == -1:
+                screen.blit(pause_fon, (0, 0))
+                pygame.display.flip()
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        running = False
 
-                if event.type == pygame.QUIT:
-                    running = False
-
-                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and time_passed - atk_timer >= 400:
-                    if player.orientation == "bot":
-                        PlayerAttack(player.rect.x, player.rect.y + tile_height // 2, player.orientation)
-                    elif player.orientation == "top":
-                        PlayerAttack(player.rect.x, player.rect.y - tile_height // 2, player.orientation)
-                    elif player.orientation == "right":
-                        PlayerAttack(player.rect.centerx, player.rect.y, player.orientation)
-                    elif player.orientation == "left":
-                        PlayerAttack(player.rect.x - tile_width // 4, player.rect.y, player.orientation)
-
-                    player.animate_attacking()
-                    attack = True
-                    atk_timer = time_passed
-
-            keys = pygame.key.get_pressed()
-            ox = oy = ox1 = oy1 = False
-            time_passed = pygame.time.get_ticks()
-            font = pygame.font.Font(None, 30)
-
-            if keys[pygame.K_a] or keys[pygame.K_LEFT]:
-                x -= speed
-                ox = True
-                player.orientation = "left"
-
-            if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
-                x += speed
-                ox1 = True
-                player.orientation = "right"
-
-            if keys[pygame.K_w] or keys[pygame.K_UP]:
-                y -= speed
-                oy = True
-                player.orientation = "top"
-
-            if keys[pygame.K_s] or keys[pygame.K_DOWN]:
-                y += speed
-                oy1 = True
-                player.orientation = "bot"
-
-            if not ox and not ox1 and not oy and not oy1:
-                moved_once = False
+                    if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                        pause = pause * -1
             else:
-                moved_once = True
+                for event in pygame.event.get():
 
-            all_sprites.draw(surf)
-            screen.blit(surf, (0, 0))
-            player.update()
-            all_bombs.update()
-            for boom in all_booms.sprites():
-                boom.countdown += 1
-                if boom.countdown >= 20:
-                    boom.kill()
+                    if event.type == pygame.QUIT:
+                        running = False
 
-            all_bombs.draw(screen)
-            all_booms.draw(screen)
+                    if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                        pause = pause * -1
 
-            all_monsters.update()
-            coin.update()
-            player_attacks.update()
+                    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and time_passed - atk_timer >= 400:
+                        if player.orientation == "bot":
+                            PlayerAttack(player.rect.x, player.rect.y + tile_height // 2, player.orientation)
+                        elif player.orientation == "top":
+                            PlayerAttack(player.rect.x, player.rect.y - tile_height // 2, player.orientation)
+                        elif player.orientation == "right":
+                            PlayerAttack(player.rect.centerx, player.rect.y, player.orientation)
+                        elif player.orientation == "left":
+                            PlayerAttack(player.rect.x - tile_width // 4, player.rect.y, player.orientation)
 
-            all_monsters.draw(screen)
-            player_attacks.draw(screen)
-            player_group.draw(screen)
-            coin.draw(screen)
+                        player.animate_attacking()
+                        attack = True
+                        atk_timer = time_passed
 
-            font1 = pygame.font.Font('fonts\\DungeonFont.ttf', 40)
-            text2 = font1.render(f'Player HP: {str(player.HP)}', True, (255, 255, 255))
-            screen.blit(text2, (0, 0))
+                keys = pygame.key.get_pressed()
+                ox = oy = ox1 = oy1 = False
+                time_passed = pygame.time.get_ticks()
+                font = pygame.font.Font(None, 30)
 
-            clock.tick(FPS)
-            pygame.display.flip()
-            attack = True
-            screen.fill((255, 255, 255))
+                if keys[pygame.K_a] or keys[pygame.K_LEFT]:
+                    x -= speed
+                    ox = True
+                    player.orientation = "left"
+
+                if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
+                    x += speed
+                    ox1 = True
+                    player.orientation = "right"
+
+                if keys[pygame.K_w] or keys[pygame.K_UP]:
+                    y -= speed
+                    oy = True
+                    player.orientation = "top"
+
+                if keys[pygame.K_s] or keys[pygame.K_DOWN]:
+                    y += speed
+                    oy1 = True
+                    player.orientation = "bot"
+
+                if not ox and not ox1 and not oy and not oy1:
+                    moved_once = False
+                else:
+                    moved_once = True
+
+                all_sprites.draw(surf)
+                screen.blit(surf, (0, 0))
+                player.update()
+                all_bombs.update()
+                for boom in all_booms.sprites():
+                    boom.countdown += 1
+                    if boom.countdown >= 20:
+                        boom.kill()
+
+                all_bombs.draw(screen)
+                all_booms.draw(screen)
+
+                all_monsters.update()
+                coin.update()
+                player_attacks.update()
+
+                all_monsters.draw(screen)
+                player_attacks.draw(screen)
+                player_group.draw(screen)
+                coin.draw(screen)
+
+                font1 = pygame.font.Font('fonts\\DungeonFont.ttf', 40)
+                text2 = font1.render(f'Player HP: {str(player.HP)}', True, (255, 255, 255))
+                screen.blit(text2, (0, 0))
+
+                clock.tick(FPS)
+                pygame.display.flip()
+                attack = True
+                screen.fill((255, 255, 255))
 
         else:
             end_screen()
@@ -631,3 +647,5 @@ atk_timer = 0
 attack = True
 win = False
 moved_once = False
+pause = 1
+pause_fon = load_image('pause.png')
