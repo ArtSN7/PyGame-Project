@@ -258,6 +258,7 @@ def go():
     global winning_coin, score, game_over, flight, player, ground_x, offset, one_pipe_passed
     sound = pygame.mixer.Sound('data_artem\\mp3\\Ambient 5.mp3')
     sound.play(loops=-1)
+    pygame.mouse.set_visible(True)
     if start_screen() == 'next':
         while winning_coin != 1:
 

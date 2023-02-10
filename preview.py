@@ -75,6 +75,7 @@ def menu():
     global run, display_height, display_width, was_played
     what_return = ''
     quit_game = False
+    pygame.mouse.set_visible(True)
 
     sound = pygame.mixer.Sound('data_artem\\mp3\\Ambient 1.mp3')
     sound.play(loops=-1)
