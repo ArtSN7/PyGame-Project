@@ -6,8 +6,8 @@ from random import randint
 
 pygame.init()
 pygame.display.set_caption('Game')
-WIDTH = 1300
-HEIGHT = 800
+WIDTH = 1900
+HEIGHT = 1050
 clock = pygame.time.Clock()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
@@ -21,6 +21,15 @@ class Spritesheet:
         sprite.blit(self.sheet, (0, 0), (x, y, width, height))
         sprite.set_colorkey("BLACK")
         return sprite
+
+
+def draw_health_bar(surf, pos, size, borderC, backC, healthC, progress):
+    pygame.draw.rect(surf, backC, (*pos, *size))
+    pygame.draw.rect(surf, borderC, (*pos, *size), 1)
+    innerPos = (pos[0] + 1, pos[1] + 1)
+    innerSize = ((size[0] - 2) * progress, size[1] - 2)
+    rect = (round(innerPos[0]), round(innerPos[1]), round(innerSize[0]), round(innerSize[1]))
+    pygame.draw.rect(surf, healthC, rect)
 
 
 def load_level(filename, dir="data"):
@@ -64,18 +73,18 @@ def terminate():
 
 
 def start_screen():
-    intro_text = ["ЗАСТАВКА"]
+    intro_text = ["БИТВА С БОССОМ"]
 
-    fon = pygame.transform.scale(pygame.image.load('fon.jpg'), (WIDTH, HEIGHT))
+    fon = pygame.transform.scale(pygame.image.load('data/fon.png'), (WIDTH, HEIGHT))
     screen.blit(fon, (0, 0))
-    font = pygame.font.Font(None, 30)
+    font = pygame.font.Font(None, 100)
     text_coord = 50
     for line in intro_text:
-        string_rendered = font.render(line, True, pygame.Color('white'))
+        string_rendered = font.render(line, True, pygame.Color('red'))
         intro_rect = string_rendered.get_rect()
-        text_coord += 10
+        text_coord += HEIGHT / 2
         intro_rect.top = text_coord
-        intro_rect.x = 10
+        intro_rect.x = WIDTH / 2 - font.size(line)[0] / 2
         text_coord += intro_rect.height
         screen.blit(string_rendered, intro_rect)
 
@@ -91,19 +100,31 @@ def start_screen():
 
 
 def end_screen():
-    intro_text = ["КОНЦОВКА"]
-    fon = pygame.transform.scale(pygame.image.load('fon.jpg'), (WIDTH, HEIGHT))
+    pygame.mixer.music.stop()
+    pygame.mixer.music.load('data/ds.mp3')
+    pygame.mixer.music.play(1)
+    fon = pygame.transform.scale(pygame.image.load('data/gover.png'), (WIDTH, HEIGHT))
+
     screen.blit(fon, (0, 0))
-    font = pygame.font.Font(None, 30)
-    text_coord = 50
-    for line in intro_text:
-        string_rendered = font.render(line, True, pygame.Color('white'))
-        intro_rect = string_rendered.get_rect()
-        text_coord += 10
-        intro_rect.top = text_coord
-        intro_rect.x = 10
-        text_coord += intro_rect.height
-        screen.blit(string_rendered, intro_rect)
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.KEYDOWN or \
+                    event.type == pygame.MOUSEBUTTONDOWN:
+                return
+        pygame.display.flip()
+        clock.tick(FPS)
+
+
+def victory_screen():
+    pygame.mixer.music.stop()
+    pygame.mixer.music.load('data/bossout.mp3')
+    pygame.mixer.music.play(1)
+    fon = pygame.transform.scale(pygame.image.load('data/yd.jpg'), (WIDTH, HEIGHT))
+
+    screen.blit(fon, (0, 0))
 
     while True:
         for event in pygame.event.get():
@@ -127,7 +148,8 @@ all_monsters = pygame.sprite.Group()
 all_mobs = pygame.sprite.Group()
 player_attacks = pygame.sprite.Group()
 coin = pygame.sprite.Group()
-projectioes = pygame.sprite.Group()
+projectiles = pygame.sprite.Group()
+lasers = pygame.sprite.Group()
 
 
 def generate_level(level):
@@ -266,7 +288,8 @@ class Bomb(pygame.sprite.Sprite):
 
 class Projectile(pygame.sprite.Sprite):
     def __init__(self, start_x, start_y, x, y):
-        super().__init__(projectioes, all_mobs)
+        self.HP = 0
+        super().__init__(projectiles, all_mobs)
         self.vel = math.sqrt(2)
         self.vector = [x - start_x, y - start_y]
         self.animation_loop = 0
@@ -281,6 +304,8 @@ class Projectile(pygame.sprite.Sprite):
         self.rect.y = start_y
 
     def update(self):
+        if self.HP<0:
+            self.kill()
         if self.animation_loop < 3:
             self.image = self.animations[math.floor(self.animation_loop)]
             self.animation_loop += 0.01
@@ -291,7 +316,7 @@ class Projectile(pygame.sprite.Sprite):
 
 class Boss(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
-        super().__init__(all_monsters, all_mobs)
+        super().__init__()
         self.animation_loop_idle = 0
         self.animations = [load_image(name, dir="Mecha-stone Golem 0.1/idle", colorkey=-1) for name in
                            ("Idle1.png", "Idle2.png", "Idle3.png", "Idle4.png", "Idle5.png")]
@@ -336,7 +361,8 @@ class Boss(pygame.sprite.Sprite):
 
     def update(self):
         if self.HP <= 0:
-            self.kill()
+            victory_screen()
+
         else:
             dx = self.rect.x - player.rect.x
             dy = self.rect.y - player.rect.y
@@ -384,8 +410,20 @@ class Boss(pygame.sprite.Sprite):
                 if time_passed - self.sprint_atk_t2 >= 4000:
                     Projectile(self.rect.x, self.rect.y, player.rect.x, player.rect.y)
                     self.sprint_atk_t2 = time_passed
+
             else:
                 self.idle_animation()
+
+    def health(self, screen):
+        health_rect = pygame.Rect(0, 0, 50, 7)
+        health_rect.midbottom = self.rect.centerx, self.rect.top
+        max_health = 200
+        # if self.HP >= 20:
+        if self.HP > 0:
+            draw_health_bar(screen, health_rect.topleft, health_rect.size,
+                            (0, 0, 0), (255, 0, 0), (0, 255, 0), self.HP / max_health)
+        else:
+            pass
 
 
 class PlayerAttack(pygame.sprite.Sprite):
@@ -430,7 +468,7 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__(player_group, all_sprites)
         self.HP = 30
-        self.ATK = 3
+        self.ATK = 10
 
         self.animations_walking_right = [load_image(name, dir="Fire_Warrior/Walk") for name in
                                          ("Fire_Warrior_Walk1.png", "Fire_Warrior_Walk2.png", "Fire_Warrior_Walk3.png",
@@ -506,11 +544,22 @@ class Player(pygame.sprite.Sprite):
         hit_list = pygame.sprite.spritecollide(self, all_mobs, False)
         for enemy in hit_list:
             if enemy in all_bombs:
-                self.HP -= 10
+                self.HP -= 3
             elif enemy in all_monsters:
                 if time_passed - enemy.last_atk >= 500:
-                    self.HP -= 4
+                    self.HP -= 1
                     enemy.last_atk = time_passed
+            elif enemy in projectiles:
+                self.HP -= 4
+                projectiles.empty()
+
+    def health(self, screen):
+        health_rect = pygame.Rect(0, 0, 50, 7)
+        health_rect.midbottom = self.rect.centerx, self.rect.top
+        max_health = 30
+        # if self.HP >= 20:
+        draw_health_bar(screen, health_rect.topleft, health_rect.size,
+                        (0, 0, 0), (255, 0, 0), (0, 255, 0), self.HP / max_health)
 
 
 # не работает:w
@@ -549,6 +598,12 @@ atk_timer = 0
 attack = True
 win = False
 moved_once = False
+b = Boss(10, 4)
+all_monsters.add(b)
+all_mobs.add(b)
+state = True
+pygame.mixer.music.load('data/bm.mp3')
+pygame.mixer.music.play(10)
 while running:
     if not game_over:
         for event in pygame.event.get():
@@ -563,64 +618,90 @@ while running:
                     PlayerAttack(player.rect.centerx, player.rect.y, player.orientation)
                 elif player.orientation == "left":
                     PlayerAttack(player.rect.x - tile_width // 4, player.rect.y, player.orientation)
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_p:
+                    state = False
+                if event.key == pygame.K_o:
+                    state = True
+
                 player.animate_attacking()
                 atk_timer = time_passed
-        keys = pygame.key.get_pressed()
-        ox = oy = ox1 = oy1 = False
-        time_passed = pygame.time.get_ticks()
-        boss_sprint_atk_timer = pygame.time.get_ticks()
-        font = pygame.font.Font(None, 30)
-        if keys[pygame.K_a] or keys[pygame.K_LEFT]:
-            x -= speed
-            ox = True
-            player.orientation = "left"
-        if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
-            x += speed
-            ox1 = True
-            player.orientation = "right"
-        if keys[pygame.K_w] or keys[pygame.K_UP]:
-            y -= speed
-            oy = True
-            player.orientation = "top"
-        if keys[pygame.K_s] or keys[pygame.K_DOWN]:
-            y += speed
-            oy1 = True
-            player.orientation = "bot"
-        if ox or ox1 or oy or oy1 and not moved_once:
-            moved_once = True
-        if not ox and not ox1 and not oy and not oy1:
-            moved = False
-        else:
-            moved = True
-        all_sprites.draw(surf)
-        screen.blit(surf, (0, 0))
-        player.update()
-        all_bombs.update()
-        for boom in all_booms.sprites():
-            boom.countdown += 1
-            if boom.countdown >= 20:
-                boom.kill()
-        all_bombs.draw(screen)
-        all_booms.draw(screen)
-        all_monsters.update()
-        coin.update()
-        player_attacks.update()
-        all_monsters.draw(screen)
-        player_attacks.draw(screen)
-        player_group.draw(screen)
-        projectioes.update()
-        projectioes.draw(screen)
-        coin.draw(screen)
-        text_coord = 30
-        for line in ["Player HP: " + str(player.HP)]:
-            string_rendered = font.render(line, True, pygame.Color('white'))
-            intro_rect = string_rendered.get_rect()
-            text_coord += 10
-            intro_rect.top = text_coord
-            intro_rect.x = 10
-            text_coord += intro_rect.height
-            screen.blit(string_rendered, intro_rect)
-        clock.tick(FPS)
+        if state == True:
+            keys = pygame.key.get_pressed()
+            ox = oy = ox1 = oy1 = False
+            time_passed = pygame.time.get_ticks()
+            boss_sprint_atk_timer = pygame.time.get_ticks()
+            font = pygame.font.Font(None, 30)
+            if keys[pygame.K_a] or keys[pygame.K_LEFT]:
+                x -= speed
+                ox = True
+                player.orientation = "left"
+            if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
+                x += speed
+                ox1 = True
+                player.orientation = "right"
+            if keys[pygame.K_w] or keys[pygame.K_UP]:
+                y -= speed
+                oy = True
+                player.orientation = "top"
+            if keys[pygame.K_s] or keys[pygame.K_DOWN]:
+                y += speed
+                oy1 = True
+                player.orientation = "bot"
+            if ox or ox1 or oy or oy1 and not moved_once:
+                moved_once = True
+            if not ox and not ox1 and not oy and not oy1:
+                moved = False
+            else:
+                moved = True
+            all_sprites.draw(surf)
+            screen.blit(surf, (0, 0))
+            player.update()
+            all_bombs.update()
+            for boom in all_booms.sprites():
+                boom.countdown += 1
+                if boom.countdown >= 20:
+                    boom.kill()
+            all_bombs.draw(screen)
+            all_booms.draw(screen)
+            all_monsters.update()
+            coin.update()
+            player_attacks.update()
+            all_monsters.draw(screen)
+            player_attacks.draw(screen)
+            player_group.draw(screen)
+            projectiles.update()
+            player.health(screen)
+            projectiles.draw(screen)
+            b.health(screen)
+
+            coin.draw(screen)
+            text_coord = 30
+            # for line in ["Осталось " + str(player.HP)]:
+            #    string_rendered = font.render(line, True, pygame.Color('white'))
+            #    intro_rect = string_rendered.get_rect()
+            #    text_coord += 10
+            #    intro_rect.top = text_coord
+            #    intro_rect.x = 10
+            #    text_coord += intro_rect.height
+            #    screen.blit(string_rendered, intro_rect)
+            clock.tick(FPS)
+        elif not state:
+            intro_text = ["пауза"]
+
+            fon = pygame.transform.scale(pygame.image.load('data/fon.png'), (WIDTH, HEIGHT))
+            screen.blit(fon, (0, 0))
+            font = pygame.font.Font(None, 100)
+            text_coord = 50
+            for line in intro_text:
+                string_rendered = font.render(line, True, pygame.Color('red'))
+                intro_rect = string_rendered.get_rect()
+                text_coord += HEIGHT / 2
+                intro_rect.top = text_coord
+                intro_rect.x = WIDTH / 2 - font.size(line)[0] / 2
+                text_coord += intro_rect.height
+                screen.blit(string_rendered, intro_rect)
+
         pygame.display.flip()
         attack = True
         mon_change_dir = False
