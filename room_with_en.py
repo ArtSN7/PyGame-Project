@@ -490,6 +490,128 @@ class Player(pygame.sprite.Sprite):
                     enemy.last_atk = time_passed
 
 
+def go():
+    global time_passed, mon_change_dir, walls_group, tiles_group, attack, moved_once, oy, ox, oy1, ox1, running, win, game_over, atk_timer, player, x, speed, y, all_sprites, surf, all_bombs, all_booms, coin, all_monsters, player_group, player_attacks, all_objects, all_mobs
+
+    while running:
+        if win:
+            running = False
+
+        elif not game_over:
+            attack = False
+
+            for event in pygame.event.get():
+
+                if event.type == pygame.QUIT:
+                    running = False
+
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and time_passed - atk_timer >= 400:
+                    if player.orientation == "bot":
+                        PlayerAttack(player.rect.x, player.rect.y + tile_height // 2, player.orientation)
+                    elif player.orientation == "top":
+                        PlayerAttack(player.rect.x, player.rect.y - tile_height // 2, player.orientation)
+                    elif player.orientation == "right":
+                        PlayerAttack(player.rect.centerx, player.rect.y, player.orientation)
+                    elif player.orientation == "left":
+                        PlayerAttack(player.rect.x - tile_width // 4, player.rect.y, player.orientation)
+
+                    player.animate_attacking()
+                    attack = True
+                    atk_timer = time_passed
+
+            keys = pygame.key.get_pressed()
+            ox = oy = ox1 = oy1 = False
+            time_passed = pygame.time.get_ticks()
+            font = pygame.font.Font(None, 30)
+
+            if keys[pygame.K_a] or keys[pygame.K_LEFT]:
+                x -= speed
+                ox = True
+                player.orientation = "left"
+
+            if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
+                x += speed
+                ox1 = True
+                player.orientation = "right"
+
+            if keys[pygame.K_w] or keys[pygame.K_UP]:
+                y -= speed
+                oy = True
+                player.orientation = "top"
+
+            if keys[pygame.K_s] or keys[pygame.K_DOWN]:
+                y += speed
+                oy1 = True
+                player.orientation = "bot"
+
+            if not ox and not ox1 and not oy and not oy1:
+                moved_once = False
+            else:
+                moved_once = True
+
+            all_sprites.draw(surf)
+            screen.blit(surf, (0, 0))
+            player.update()
+            all_bombs.update()
+            for boom in all_booms.sprites():
+                boom.countdown += 1
+                if boom.countdown >= 20:
+                    boom.kill()
+
+            all_bombs.draw(screen)
+            all_booms.draw(screen)
+
+            all_monsters.update()
+            coin.update()
+            player_attacks.update()
+
+            all_monsters.draw(screen)
+            player_attacks.draw(screen)
+            player_group.draw(screen)
+            coin.draw(screen)
+
+            font1 = pygame.font.Font('fonts\\DungeonFont.ttf', 40)
+            text2 = font1.render(f'Player HP: {str(player.HP)}', True, (255, 255, 255))
+            screen.blit(text2, (0, 0))
+
+            clock.tick(FPS)
+            pygame.display.flip()
+            attack = True
+            screen.fill((255, 255, 255))
+
+        else:
+            end_screen()
+
+            all_sprites = pygame.sprite.Group()
+            all_bombs = pygame.sprite.Group()
+            all_booms = pygame.sprite.Group()
+            all_objects = pygame.sprite.Group()
+            tiles_group = pygame.sprite.Group()
+            player_group = pygame.sprite.Group()
+            walls_group = pygame.sprite.Group()
+            all_monsters = pygame.sprite.Group()
+            all_mobs = pygame.sprite.Group()
+            player_attacks = pygame.sprite.Group()
+            coin = pygame.sprite.Group()
+
+            game_over = False
+            player, level_x, level_y, player_pos = generate_level(level)
+            x, y = player_pos
+            x *= tile_width
+            x += 15
+            y *= tile_height
+            y += 5
+            mon_change_dir = False
+            running = True
+            pygame.mouse.set_visible(False)
+            surf = pygame.Surface((WIDTH, HEIGHT))
+            tiles_group.draw(surf)
+            speed = 2
+            atk_timer = 0
+            attack = True
+            win = False
+            moved_once = False
+
 
 game_over = False
 player, level_x, level_y, player_pos = generate_level(level)
@@ -507,126 +629,5 @@ tiles_group.draw(surf)
 speed = 2
 atk_timer = 0
 attack = True
-win = True
+win = False
 moved_once = False
-
-while running:
-    if win:
-        running = False
-
-    elif not game_over:
-        attack = False
-
-        for event in pygame.event.get():
-
-            if event.type == pygame.QUIT:
-                running = False
-
-            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and time_passed - atk_timer >= 400:
-                if player.orientation == "bot":
-                    PlayerAttack(player.rect.x, player.rect.y + tile_height // 2, player.orientation)
-                elif player.orientation == "top":
-                    PlayerAttack(player.rect.x, player.rect.y - tile_height // 2, player.orientation)
-                elif player.orientation == "right":
-                    PlayerAttack(player.rect.centerx, player.rect.y, player.orientation)
-                elif player.orientation == "left":
-                    PlayerAttack(player.rect.x - tile_width // 4, player.rect.y, player.orientation)
-
-                player.animate_attacking()
-                attack = True
-                atk_timer = time_passed
-
-        keys = pygame.key.get_pressed()
-        ox = oy = ox1 = oy1 = False
-        time_passed = pygame.time.get_ticks()
-        font = pygame.font.Font(None, 30)
-
-        if keys[pygame.K_a] or keys[pygame.K_LEFT]:
-            x -= speed
-            ox = True
-            player.orientation = "left"
-
-        if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
-            x += speed
-            ox1 = True
-            player.orientation = "right"
-
-        if keys[pygame.K_w] or keys[pygame.K_UP]:
-            y -= speed
-            oy = True
-            player.orientation = "top"
-
-        if keys[pygame.K_s] or keys[pygame.K_DOWN]:
-            y += speed
-            oy1 = True
-            player.orientation = "bot"
-
-        if not ox and not ox1 and not oy and not oy1:
-            moved_once = False
-        else:
-            moved_once = True
-
-        all_sprites.draw(surf)
-        screen.blit(surf, (0, 0))
-        player.update()
-        all_bombs.update()
-        for boom in all_booms.sprites():
-            boom.countdown += 1
-            if boom.countdown >= 20:
-                boom.kill()
-
-        all_bombs.draw(screen)
-        all_booms.draw(screen)
-
-        all_monsters.update()
-        coin.update()
-        player_attacks.update()
-
-        all_monsters.draw(screen)
-        player_attacks.draw(screen)
-        player_group.draw(screen)
-        coin.draw(screen)
-
-        text_coord = 30
-        font1 = pygame.font.Font('fonts\\DungeonFont.ttf', 40)
-        text2 = font1.render(f'Player HP: {str(player.HP)}', True, (255, 255, 255))
-        screen.blit(text2, (0, 0))
-
-        clock.tick(FPS)
-        pygame.display.flip()
-        attack = True
-        screen.fill((255, 255, 255))
-
-    else:
-        end_screen()
-
-        all_sprites = pygame.sprite.Group()
-        all_bombs = pygame.sprite.Group()
-        all_booms = pygame.sprite.Group()
-        all_objects = pygame.sprite.Group()
-        tiles_group = pygame.sprite.Group()
-        player_group = pygame.sprite.Group()
-        walls_group = pygame.sprite.Group()
-        all_monsters = pygame.sprite.Group()
-        all_mobs = pygame.sprite.Group()
-        player_attacks = pygame.sprite.Group()
-        coin = pygame.sprite.Group()
-
-        game_over = False
-        player, level_x, level_y, player_pos = generate_level(level)
-        x, y = player_pos
-        x *= tile_width
-        x += 15
-        y *= tile_height
-        y += 5
-        mon_change_dir = False
-        running = True
-        pygame.mouse.set_visible(False)
-        surf = pygame.Surface((WIDTH, HEIGHT))
-        tiles_group.draw(surf)
-        speed = 2
-        atk_timer = 0
-        attack = True
-        win = False
-        moved_once = False
-
