@@ -20,6 +20,9 @@ Project on python using PyGame
 Помимо этого, имеется файл results.txt, который служит своеобразной базой данных для игры. 
 
 
+P.S. к субботе 11.02.23 финальная часть игры, т.е босс, не добавлен, но сделан!
+
+
 ссылка на презентацию: https://docs.google.com/presentation/d/1_LUdtPYvyXmewtl_YNyYRCmGRgazTal6r3jPKuhlqqk/edit?usp=sharing
 
 ![Отчет о выполненной работе](https://user-images.githubusercontent.com/102421671/218195506-614db81f-87bd-4bba-bbe7-368b5be09fe6.png)
