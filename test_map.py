@@ -87,6 +87,9 @@ def go():
     was = False
     was1 = False
 
+    sound = pygame.mixer.Sound('data_artem\\mp3\\Ambient 10 .mp3')
+    sound.play(loops=-1)
+
     while running:
         screen.blit(fon, (0, 0))
         screen.blit(image_of_cursor, position)
@@ -108,6 +111,7 @@ def go():
 
             if event.type == pygame.QUIT:
                 running = False
+                sound.stop()
 
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 sys.exit()
@@ -132,6 +136,7 @@ def go():
                     elif final_boss:
                         was = True
                     else:
+                        sound.stop()
                         return 'final boss'
 
                 if 70 <= x <= 230 and 90 <= y <= 240:
@@ -139,12 +144,14 @@ def go():
                         was = True
 
                     else:
+                        sound.stop()
                         return 'space game'
 
                 if 520 <= x <= 670 and 470 <= y <= 620:
                     if room:
                         was = True
                     else:
+                        sound.stop()
                         return 'room with enemies'
 
                 if 1130 <= x <= 1280 and 470 <= y <= 620:
@@ -152,6 +159,7 @@ def go():
                         was = True
 
                     else:
+                        sound.stop()
                         return 'flappy bird'
 
         pygame.display.flip()
