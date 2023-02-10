@@ -282,7 +282,7 @@ def go():
                     m.rect.y = m.y
                     monsters.add(m)
             if hp <= 0:
-                if rows - 2 >= 6:
+                if rows >= 6:
                     monsters.empty()
                     winning_of_space = True
                 else:
@@ -296,9 +296,10 @@ def go():
         text1 = font2.render(f'Attacks passed: {rows - 2}', True, (128, 0, 0))
         screen.blit(text1, (1400, 0))
 
-        if rows - 2 >= 6:
+        if rows >= 6:
             text2 = font2.render(f'W-KEY: 1', True, (128, 0, 0))
             screen.blit(text2, (1700, 0))
+            winning_of_space = True
         else:
             text2 = font2.render(f'W-KEY: 0', True, (128, 0, 0))
             screen.blit(text2, (1700, 0))

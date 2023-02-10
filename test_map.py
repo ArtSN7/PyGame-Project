@@ -65,10 +65,8 @@ def work_with_file(do, *args):
             past_info = [i.strip() for i in file.readlines()]
             file.truncate(0)
 
-            if len(past_info) != 1:
-                new_info = [str(int(list(past_info[0])[-1]) + 1)] + past_info[1:] + [args[0]]
-            else:
-                new_info = [str(int(list(past_info[0])[-1]))]
+
+            new_info = [str(int(list(past_info[0])[-1]) + 1)] + past_info[1:] + [args[0]]
 
             for i in new_info:
                 file.write(i)
