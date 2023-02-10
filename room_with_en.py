@@ -62,6 +62,9 @@ def terminate():
 
 
 def start_screen():
+    sound = pygame.mixer.Sound('data_artem\\mp3\\Ambient 3.mp3')
+    sound.play(loops=-1)
+
     pygame.mouse.set_visible(True)
 
     fon = pygame.transform.scale(load_image('fon.png'), (WIDTH, HEIGHT))
@@ -85,7 +88,8 @@ def start_screen():
 
         pygame.display.flip()
         clock.tick(FPS)
-
+    sound.stop()
+    pygame.mouse.set_visible(False)
     return znach
 
 
@@ -486,6 +490,8 @@ def go():
         atk_timer, player, x, speed, y, all_sprites, surf, all_bombs, all_booms, coin,\
         all_monsters, player_group, player_attacks, all_objects, all_mobs, pause, pause_screen
 
+    sound = pygame.mixer.Sound('data_artem\\mp3\\Action 3 (Loop).mp3')
+    sound.play(loops=-1)
     while running:
         if win:
             running = False
@@ -494,20 +500,26 @@ def go():
             attack = False
 
             if pause == -1:
+                pygame.mouse.set_visible(True)
+                sound.stop()
                 screen.blit(pause_fon, (0, 0))
                 pygame.display.flip()
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         running = False
 
-                    if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                        pause = pause * -1
-
-                    if event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.type == pygame.MOUSEBUTTONUP:
                         x, y = pygame.mouse.get_pos()
                         if 630 <= x <= 1230 and 870 <= y <= 1070:
                             return 'exit'
+
+                    elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                        pause = pause * -1
+                        sound.play()
+                        pygame.mouse.set_visible(False)
+
             else:
+
                 for event in pygame.event.get():
 
                     if event.type == pygame.QUIT:
@@ -591,6 +603,7 @@ def go():
                 screen.fill((255, 255, 255))
 
         else:
+            sound.stop()
             end_screen()
 
             all_sprites = pygame.sprite.Group()
@@ -622,6 +635,7 @@ def go():
             attack = True
             win = False
             moved_once = False
+            sound.play()
 
     return 'win'
 
