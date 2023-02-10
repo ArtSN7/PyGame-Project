@@ -97,7 +97,7 @@ def menu():
                     run = False
 
                 elif x >= 640 and x <= 1240 and y >= 470 and y <= 670:
-                    what_return = 'countinue'
+                    what_return = 'continue'
                     run = False
 
                 elif x >= 640 and x <= 1240 and y >= 710 and y <= 910:

@@ -74,10 +74,16 @@ def work_with_file(do, *args):
                 file.write(i)
                 file.write('\n')
 
+        if do == 3:
+            file.truncate(0)
+            file.write('0')
+
 
 
 def go():
-    global running, clock, screen, fon, image_of_cursor, final_boss, space, room, bird, keys
+    global running, clock, screen, fon, image_of_cursor
+
+    keys, final_boss, space, room, bird = work_with_file(1)
 
     position = (960, 640)
     was = False
@@ -151,6 +157,3 @@ def go():
                         return 'flappy bird'
 
         pygame.display.flip()
-
-
-keys, final_boss, space, room, bird = work_with_file(1)

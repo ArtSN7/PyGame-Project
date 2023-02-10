@@ -6,21 +6,21 @@ import flappy_bird
 import preview
 
 
-#if room_with_en.start_screen() == 'play':
-#    if room_with_en.go() == 'win':
-#       print('win')
-#    elif room_with_en.go() == 'exit':
-#       print('exit')
-#else:
-#   sys.exit()
+
+st = preview.start()
+if st == 'new game' or st == 'continue':
+
+    if st == 'new game':
+        test_map.work_with_file(3)
+
+    keys, final_boss, space, room, bird = test_map.work_with_file(1)
 
 
-if preview.start() == 'new game' or preview.start() == 'continue':
     running = True
 
     while running:
 
-        keys, final_boss, space, room, bird = test_map.work_with_file(1)
+
 
         if int(keys) >= 4:
             if preview.end_of_the_game() == 'finish':
@@ -43,3 +43,5 @@ if preview.start() == 'new game' or preview.start() == 'continue':
 
         if a == 'final boss':
             pass
+
+        keys, final_boss, space, room, bird = test_map.work_with_file(1)
