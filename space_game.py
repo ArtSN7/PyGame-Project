@@ -163,49 +163,12 @@ def start_screen():
 
 
 
-if True:
-    pygame.init()
-    pygame.display.set_caption('siv')
-    size = width, height = 1920, 1080
-    screen = pygame.display.set_mode(size)
+def go():
+    global screen, rows, running, shooter, schd, schr, schu, schl, c, shp, hp, cr
 
     start_screen()
 
-    shp = ship(screen)
-    bg = load_image('bgr.jpg')
-    bmb = bombs(screen, shp)
-    monsters = Group()
-    pygame.display.flip()
-    many_bombs = Group()
-    running = True
-    m = mobs(screen)
-    wd = m.rect.width
-    ht = m.rect.height
-    c = 0
-    rows = 1
-
-    new = False
-    clock = pygame.time.Clock()
-
-    playlist = list()
-    playlist.append("data_max/music.mp3")
-    playlist.append("data_max/music.mp3")
-    shooter = True
-
-    pygame.mixer.music.load(playlist.pop())
-    pygame.mixer.music.queue(playlist.pop())
-    pygame.mixer.music.set_endevent(pygame.USEREVENT)
-    pygame.mixer.music.play()
-    pygame.mixer.music.set_volume(0)
-
-    hp = 3
-    b = False
-    f1 = pygame.font.Font(None, 36)
-    cr = 0
-
-    wave = 0
-    schu = 0
-    hl = health(screen, hp)
+    znach = ''
 
     for s in range(rows):
         for i in range(37):
@@ -234,8 +197,17 @@ if True:
 
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 pause = pause * -1
+                pygame.mouse.set_visible(False)
+
+            if event.type == pygame.MOUSEBUTTONUP and pause == -1:
+                x, y = pygame.mouse.get_pos()
+                if 630 <= x <= 1230 and 870 <= y <= 1070:
+                    znach = 'exit'
+                    running = False
+
 
             if pause == -1:
+                pygame.mouse.set_visible(True)
                 screen.blit(pause_fon, (0, 0))
                 pygame.display.flip()
                 pygame.mixer.music.stop()
@@ -361,6 +333,50 @@ if True:
             c += 1
 
         if winning_of_space:
+            znach = 'win'
             running = False
 
-    exit()
+    return znach
+
+
+
+pygame.init()
+pygame.display.set_caption('siv')
+size = width, height = 1920, 1080
+screen = pygame.display.set_mode(size)
+shp = ship(screen)
+bg = load_image('bgr.jpg')
+bmb = bombs(screen, shp)
+monsters = Group()
+pygame.display.flip()
+many_bombs = Group()
+running = True
+m = mobs(screen)
+wd = m.rect.width
+ht = m.rect.height
+c = 0
+rows = 1
+
+
+new = False
+clock = pygame.time.Clock()
+
+playlist = list()
+playlist.append("data_max/music.mp3")
+playlist.append("data_max/music.mp3")
+shooter = True
+
+pygame.mixer.music.load(playlist.pop())
+pygame.mixer.music.queue(playlist.pop())
+pygame.mixer.music.set_endevent(pygame.USEREVENT)
+pygame.mixer.music.play()
+pygame.mixer.music.set_volume(0)
+
+hp = 3
+b = False
+f1 = pygame.font.Font(None, 36)
+cr = 0
+
+wave = 0
+schu = 0
+hl = health(screen, hp)
