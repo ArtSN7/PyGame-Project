@@ -105,6 +105,9 @@ def go():
             if event.type == pygame.QUIT:
                 running = False
 
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                sys.exit()
+
             if event.type == pygame.MOUSEMOTION:
                 if pygame.mouse.get_focused():
                     pygame.mouse.set_visible(False)
