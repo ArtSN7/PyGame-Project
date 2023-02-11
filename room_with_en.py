@@ -636,7 +636,7 @@ def go():
             win = False
             moved_once = False
             sound.play()
-
+    sound.stop()
     return 'win'
 
 
