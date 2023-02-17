@@ -18,6 +18,7 @@ n = 1
 
 def end_of_the_game():
     global run, display_height, display_width, was_played
+    pygame.mouse.set_visible(True)
     sound = pygame.mixer.Sound('data_artem\\mp3\\Ambient 7.mp3')
     sound.play(loops=-1)
 

@@ -4,6 +4,7 @@ import room_with_en
 import test_map
 import flappy_bird
 import preview
+import Final_battle
 
 
 
@@ -15,16 +16,9 @@ if st == 'new game' or st == 'continue':
 
     keys, final_boss, space, room, bird = test_map.work_with_file(1)
 
-
     running = True
 
     while running:
-
-
-
-        if int(keys) >= 4:
-            if preview.end_of_the_game() == 'finish':
-                sys.exit()
 
         a = test_map.go()
 
@@ -42,6 +36,8 @@ if st == 'new game' or st == 'continue':
                     test_map.work_with_file(2, 'room')
 
         if a == 'final boss':
-            pass
+            if Final_battle.start_screen() == 'win':
+                if preview.end_of_the_game() == 'finish':
+                    sys.exit()
 
         keys, final_boss, space, room, bird = test_map.work_with_file(1)
