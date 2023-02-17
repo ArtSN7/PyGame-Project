@@ -4,11 +4,14 @@ import pygame
 from pygame.sprite import Group
 import random
 
+
 all_sprites = pygame.sprite.Group()
 schr = 0
 schu = 0
 schl = 0
 schd = 0
+
+
 
 
 class ship():
@@ -49,7 +52,7 @@ class mobs(pygame.sprite.Sprite):
         screen.blit(self.image, self.rect)
 
     def update(self):
-        self.rect.y += 7
+        self.rect.y += 1
 
 
 class bombs(pygame.sprite.Sprite):
@@ -58,7 +61,7 @@ class bombs(pygame.sprite.Sprite):
         self.screen = screen
         self.image = load_image('bullit.png')
         self.rect = self.image.get_rect()
-        self.speed = 7
+        self.speed = 2
         self.shipps = shp.rect
 
         self.rect.centerx = shp.rect.centerx
@@ -93,7 +96,7 @@ class health:
             self.rect = self.image.get_rect()
 
         self.rect.top = self.screen.get_rect().top
-        self.rect.left = self.screen.get_rect().left + 120
+        self.rect.left = self.screen.get_rect().left
 
     def realise(self):
         self.screen.blit(self.image, self.rect)
@@ -114,7 +117,6 @@ def load_image(name, colorkey=None, transform=None):
         image = image.convert_alpha()
     return image
 
-
 def end_screen():
     playlist.append("data_max/ehh.mp3")
     playlist.append("data_max/ehh.mp3")
@@ -123,6 +125,7 @@ def end_screen():
     pygame.mixer.music.queue(playlist.pop())
     pygame.mixer.music.set_endevent(pygame.USEREVENT)
     pygame.mixer.music.play()
+    pygame.mixer.music.set_volume(0)
 
     fon = pygame.transform.scale(load_image('game over.jpg'), (1920, 1080))
     screen.blit(fon, (0, 0))
@@ -136,12 +139,14 @@ def end_screen():
                     playlist.clear()
                     playlist.append("data_max/music.mp3")
                     playlist.append("data_max/music.mp3")
+
                     pygame.mixer.music.load(playlist.pop())
                     pygame.mixer.music.queue(playlist.pop())
                     pygame.mixer.music.set_endevent(pygame.USEREVENT)
                     pygame.mixer.music.play()
-                    return
+                    pygame.mixer.music.set_volume(0)
 
+                    return
 
 def start_screen():
     fon = load_image('starting_screen.png')
@@ -156,15 +161,9 @@ def start_screen():
                 return
 
 
-def go():
-    playlist.append("data_max/music.mp3")
-    playlist.append("data_max/music.mp3")
-    # pygame.mixer.music.load(playlist.pop())
-    # pygame.mixer.music.queue(playlist.pop())
-    pygame.mixer.music.set_endevent(pygame.USEREVENT)
-    pygame.mixer.music.play()
-    pygame.mixer.music.set_volume(100)
 
+
+def go():
     global screen, rows, running, shooter, schd, schr, schu, schl, c, shp, hp, cr
 
     start_screen()
@@ -172,9 +171,9 @@ def go():
     znach = ''
 
     for s in range(rows):
-        for i in range(32):
+        for i in range(37):
             m = mobs(screen)
-            m.x = wd + wd * i + 100
+            m.x = wd + wd * i
             m.y = ht + ht * s
             m.rect.x = m.x
             m.rect.y = m.y
@@ -202,17 +201,18 @@ def go():
 
             if event.type == pygame.MOUSEBUTTONUP and pause == -1:
                 x, y = pygame.mouse.get_pos()
-                if 630 <= x <= 1930 and 870 <= y <= 1070:
+                if 630 <= x <= 1230 and 870 <= y <= 1070:
                     znach = 'exit'
                     running = False
+
 
             if pause == -1:
                 pygame.mouse.set_visible(True)
                 screen.blit(pause_fon, (0, 0))
                 pygame.display.flip()
-                pygame.mixer.music.set_volume(0)
+                pygame.mixer.music.stop()
             else:
-                pygame.mixer.music.set_volume(100)
+                pygame.mixer.music.play()
 
                 if shooter == True:
                     if event.type == pygame.MOUSEBUTTONDOWN:
@@ -239,14 +239,15 @@ def go():
                     if event.key == pygame.K_w:
                         schu = 0
 
-        if schr == 1 and shp.rect.right <= 1830:
-            shp.cc += 2
+
+        if schr == 1 and shp.rect.right <= width:
+            shp.cc += 1
         if schd == 1 and shp.rect.bottom < height:
-            shp.cy += 2
-        if schl == 1 and shp.rect.left > 80:
-            shp.cc -= 2
+            shp.cy += 1
+        if schl == 1 and shp.rect.left > -20:
+            shp.cc -= 1
         if schu == 1 and shp.rect.top > -20:
-            shp.cy -= 2
+            shp.cy -= 1
 
         shp.rect.centerx = shp.cc
         shp.rect.centery = shp.cy
@@ -273,9 +274,9 @@ def go():
             monsters.empty()
             shp.relocation()
             for s in range(rows - 1):
-                for i in range(32):
+                for i in range(37):
                     m = mobs(screen)
-                    m.x = wd + wd * i + 100
+                    m.x = wd + wd * i
                     m.y = ht + ht * s
                     m.rect.x = m.x
                     m.rect.y = m.y
@@ -307,15 +308,15 @@ def go():
             shooter = False
             if cr % 2000 == 0:
                 shooter = True
+
                 for s in range(rows):
-                    for i in range(32):
+                    for i in range(37):
                         m = mobs(screen)
-                        m.x = wd + wd * i + 100
+                        m.x = wd + wd * i
                         m.y = ht + ht * s
                         m.rect.x = m.x
                         m.rect.y = m.y
                         monsters.add(m)
-                r1 = rows
 
                 rows += 1
 
@@ -339,6 +340,7 @@ def go():
     return znach
 
 
+
 pygame.init()
 pygame.display.set_caption('siv')
 size = width, height = 1920, 1080
@@ -355,6 +357,7 @@ wd = m.rect.width
 ht = m.rect.height
 c = 0
 rows = 1
+
 
 new = False
 clock = pygame.time.Clock()
